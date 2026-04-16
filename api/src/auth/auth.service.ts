@@ -18,7 +18,14 @@ export class AuthService {
     const userId = String(newUser._id);
     const tokens = await this.getTokens(userId, newUser.email);
     await this.updateRefreshTokenHash(userId, tokens.refresh_token);
-    return tokens;
+
+    const userResponse = newUser.toObject();
+    delete userResponse.password;
+
+    return {
+      user: userResponse,
+      ...tokens,
+    };
   }
 
   async signIn(email: string, pass: string) {
@@ -31,7 +38,14 @@ export class AuthService {
     const userId = String(user._id);
     const tokens = await this.getTokens(userId, user.email);
     await this.updateRefreshTokenHash(userId, tokens.refresh_token);
-    return tokens;
+
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    return {
+      user: userResponse,
+      ...tokens,
+    };
   }
 
   async logout(userId: string) {

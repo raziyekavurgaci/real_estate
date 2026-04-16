@@ -31,13 +31,17 @@ export class UsersService {
     return this.userModel.findOne({ email }).select('+password').exec();
   }
 
+  async findAll(): Promise<User[]> {
+    return this.userModel.find().exec();
+  }
+
   async findById(id: string): Promise<User | null> {
     return this.userModel.findById(id).exec();
   }
 
   async update(id: string, updateData: Partial<User>): Promise<User | null> {
     return this.userModel
-      .findByIdAndUpdate(id, updateData, { new: true })
+      .findByIdAndUpdate(id, updateData, { returnDocument: 'after' })
       .exec();
   }
 }
