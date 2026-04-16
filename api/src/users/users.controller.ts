@@ -1,11 +1,18 @@
 import { Body, Controller, Get, Param, Patch, Req, UseGuards } from '@nestjs/common';
+import { Request } from 'express';
 import { UsersService } from './users.service';
-import { AtGuard } from '../auth/guards/accesstoken.guard';
+import { AccessTokenGuard } from '../auth/guards/accesstoken.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 
+interface JwtRequest extends Request {
+  user: {
+    sub: string;
+  };
+}
+
 @Controller('users')
-@UseGuards(AtGuard) 
+@UseGuards(AccessTokenGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -15,7 +22,7 @@ export class UsersController {
   }
 
   @Get('me')
-  getMe(@Req() req: any) {
+  getMe(@Req() req: JwtRequest) {
     const userId = req.user.sub;
     return this.usersService.findById(userId);
   }
@@ -26,9 +33,8 @@ export class UsersController {
   }
 
   @Patch('me')
-  async updateMe(@Req() req: any, @Body() updateUserDto: UpdateUserDto) {
-    const userId = req.user.sub;
-    
+  async updateMe(@Req() req: JwtRequest, @Body() updateUserDto: UpdateUserDto) {
+    const userId = req.user.sub;  
     if (updateUserDto.password) {
       updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
     }

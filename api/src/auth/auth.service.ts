@@ -49,15 +49,15 @@ export class AuthService {
   }
 
   async logout(userId: string) {
-    await this.usersService.update(userId, { refreshToken: null as any });
+    await this.usersService.update(userId, { refreshToken: null });
   }
 
-  async refreshTokens(userId: string, rt: string) {
+  async refreshTokens(userId: string, refreshToken: string) {
     const user = await this.usersService.findById(userId);
     if (!user || !user.refreshToken) throw new ForbiddenException('Erişim reddedildi.');
 
-    const rtMatches = await bcrypt.compare(rt, user.refreshToken);
-    if (!rtMatches) throw new ForbiddenException('Erişim reddedildi.');
+    const isRefreshTokenMatching = await bcrypt.compare(refreshToken, user.refreshToken);
+    if (!isRefreshTokenMatching) throw new ForbiddenException('Erişim reddedildi.');
 
     const uid = String(user._id);
     const tokens = await this.getTokens(uid, user.email);
@@ -66,28 +66,28 @@ export class AuthService {
   }
 
   async getTokens(userId: string, email: string) {
-    const [at, rt] = await Promise.all([
+    const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         { sub: userId, email },
         {
           secret: this.configService.get<string>('JWT_ACCESS_SECRET') as string,
-          expiresIn: this.configService.get<string>('JWT_ACCESS_EXPIRES_IN') as any,
+          expiresIn: this.configService.get<string>('JWT_ACCESS_EXPIRES_IN') as string,
         },
       ),
       this.jwtService.signAsync(
         { sub: userId, email },
         {
           secret: this.configService.get<string>('JWT_REFRESH_SECRET') as string,
-          expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') as any,
+          expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') as string,
         },
       ),
     ]);
 
-    return { access_token: at, refresh_token: rt };
+    return { access_token: accessToken, refresh_token: refreshToken };
   }
 
-  async updateRefreshTokenHash(userId: string, rt: string) {
-    const hash = await bcrypt.hash(rt, 10);
+  async updateRefreshTokenHash(userId: string, refreshToken: string) {
+    const hash = await bcrypt.hash(refreshToken, 10);
     await this.usersService.update(userId, { refreshToken: hash });
   }
 }

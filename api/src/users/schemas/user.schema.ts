@@ -25,7 +25,7 @@ export class User extends Document {
   role: UserRole;
 
   @Prop({ select: false })
-  refreshToken?: string;
+  refreshToken: string | null;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
