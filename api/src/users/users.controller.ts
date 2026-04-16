@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Patch, Req, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { AtGuard } from '../auth/guards/at.guard';
+import { AtGuard } from '../auth/guards/accesstoken.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
 import * as bcrypt from 'bcrypt';
 

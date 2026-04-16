@@ -2,8 +2,8 @@ import { Body, Controller, HttpCode, HttpStatus, Post, Req, UseGuards } from '@n
 import { AuthService } from './auth.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { SigninDto } from './dto/signin.dto';
-import { AtGuard } from './guards/at.guard';
-import { RtGuard } from './guards/rt.guard';
+import { AtGuard } from './guards/accesstoken.guard';
+import { RtGuard } from './guards/refreshtoken.guard';
 
 @Controller('auth')
 export class AuthController {
