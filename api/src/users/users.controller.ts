@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Param, Patch, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Query, Req, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
 import { UsersService } from './users.service';
 import { AccessTokenGuard } from '../auth/guards/accesstoken.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserRole } from './schemas/user.schema';
 import * as bcrypt from 'bcrypt';
 
 interface JwtRequest extends Request {
@@ -17,8 +18,8 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Query('role') role?: UserRole) {
+    return this.usersService.findAll(role);
   }
 
   @Get('me')

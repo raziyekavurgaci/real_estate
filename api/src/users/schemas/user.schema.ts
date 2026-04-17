@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export enum UserRole {
-  ADMIN = 'ADMIN',
+  AGENCY = 'AGENCY',
   AGENT = 'AGENT',
 }
 
@@ -23,6 +23,10 @@ export class User extends Document {
     default: UserRole.AGENT,
   })
   role: UserRole;
+
+  // AGENT'ların bağlı olduğu ana AGENCY'yi referans alır
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  agency?: User;
 
   @Prop({ select: false })
   refreshToken: string | null;
