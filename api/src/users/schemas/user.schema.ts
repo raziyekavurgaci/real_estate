@@ -28,7 +28,7 @@ export class User extends Document {
   @Prop({ type: Types.ObjectId, ref: 'User' })
   agency?: User;
 
-  @Prop({ select: false })
+  @Prop({ type: String, select: false, default: null })
   refreshToken: string | null;
 }
 

@@ -16,7 +16,7 @@ export class AuthService {
   async signUp(dto: CreateUserDto) {
     const newUser = await this.usersService.create(dto);
     const userId = String(newUser._id);
-    const tokens = await this.getTokens(userId, newUser.email);
+    const tokens = await this.getTokens(userId, newUser.email, newUser.role);
     await this.updateRefreshTokenHash(userId, tokens.refresh_token);
 
     const userResponse = newUser.toObject();
@@ -36,7 +36,7 @@ export class AuthService {
     if (!passwordMatches) throw new ForbiddenException('Erişim reddedildi.');
 
     const userId = String(user._id);
-    const tokens = await this.getTokens(userId, user.email);
+    const tokens = await this.getTokens(userId, user.email, user.role);
     await this.updateRefreshTokenHash(userId, tokens.refresh_token);
 
     const userResponse = user.toObject();
@@ -60,25 +60,25 @@ export class AuthService {
     if (!isRefreshTokenMatching) throw new ForbiddenException('Erişim reddedildi.');
 
     const uid = String(user._id);
-    const tokens = await this.getTokens(uid, user.email);
+    const tokens = await this.getTokens(uid, user.email, user.role);
     await this.updateRefreshTokenHash(uid, tokens.refresh_token);
     return tokens;
   }
 
-  async getTokens(userId: string, email: string) {
+  async getTokens(userId: string, email: string, role: string) {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
-        { sub: userId, email },
+        { sub: userId, email, role },
         {
           secret: this.configService.get<string>('JWT_ACCESS_SECRET') as string,
-          expiresIn: this.configService.get<string>('JWT_ACCESS_EXPIRES_IN') as string,
+          expiresIn: this.configService.get('JWT_ACCESS_EXPIRES_IN') as any,
         },
       ),
       this.jwtService.signAsync(
-        { sub: userId, email },
+        { sub: userId, email, role },
         {
           secret: this.configService.get<string>('JWT_REFRESH_SECRET') as string,
-          expiresIn: this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') as string,
+          expiresIn: this.configService.get('JWT_REFRESH_EXPIRES_IN') as any,
         },
       ),
     ]);
