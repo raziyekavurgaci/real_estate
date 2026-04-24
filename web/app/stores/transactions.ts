@@ -74,6 +74,22 @@ export const useTransactionsStore = defineStore('transactions', {
       } finally {
         this.loading = false
       }
+    },
+
+    async createTransaction(payload: { listingId: string, sellingAgentId: string }) {
+      this.loading = true
+      this.error = null
+      const api = useApi()
+      try {
+        const res = await api.post<Transaction>('/transactions', payload)
+        this.transactions.push(res)
+        return res
+      } catch (e: any) {
+        this.error = e?.data?.message || 'Yeni işlem başlatılamadı.'
+        throw e
+      } finally {
+        this.loading = false
+      }
     }
   }
 })
