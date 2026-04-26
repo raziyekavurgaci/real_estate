@@ -1,91 +1,91 @@
-# Real Estate Transaction System
+# Gayrimenkul İşlem Sistemi
 
-A full-stack application built with **NestJS** and **Nuxt 3** to automate and manage the lifecycle of real estate transactions, including dynamic commission calculations and stage tracking.
+Dinamik komisyon hesaplamaları ve aşama takibi de dahil olmak üzere gayrimenkul işlemlerinin yaşam döngüsünü otomatikleştirmek ve yönetmek için **NestJS** ve **Nuxt 3** ile oluşturulmuş tam yığın (full-stack) bir uygulama.
 
-## Prerequisites
-- **Node.js**: v18 or newer (LTS recommended)
-- **MongoDB Atlas**: You must have a MongoDB connection string.
-- **npm** or **yarn**
+## Ön Koşullar
+- **Node.js**: v18 veya daha yenisi (LTS önerilir)
+- **MongoDB Atlas**: Bir MongoDB bağlantı dizeniz (connection string) olmalıdır.
+- **npm** veya **yarn**
 
 ---
 
-## 1. Backend Setup (NestJS)
+## 1. Arka Uç Kurulumu (NestJS)
 
-1. Open a terminal and navigate to the `api` folder:
+1. Bir terminal açın ve `api` klasörüne gidin:
    ```bash
    cd api
    ```
 
-2. Install dependencies:
+2. Bağımlılıkları yükleyin:
    ```bash
    npm install
    ```
 
-3. Configure Environment Variables:
-   Create a `.env` file in the `api` root directory:
+3. Çevresel Değişkenleri Yapılandırın:
+   `api` kök dizininde bir `.env` dosyası oluşturun:
    ```env
    MONGO_URL=mongodb+srv://<username>:<password>@cluster.mongodb.net/real_estate
    JWT_SECRET=super_secret_key_here
    COMMISSION_RATE=0.03
    ```
-   *(Make sure to replace `<username>` and `<password>` with your actual MongoDB Atlas credentials).*
+   *( `<username>` ve `<password>` kısımlarını gerçek MongoDB Atlas kimlik bilgilerinizle değiştirdiğinizden emin olun).*
 
-4. Run the Seed Script (Optional but Highly Recommended):
-   To generate dummy Agencies, Agents, and Listings to test the frontend:
+4. Seed Komut Dosyasını Çalıştırın (İsteğe Bağlı ama Şiddetle Tavsiye Edilir):
+   Ön yüzü test etmek için sahte Ajanslar, Danışmanlar ve İlanlar oluşturmak için:
    ```bash
    npx ts-node src/scripts/seed.ts
    ```
 
-5. Run the Backend Unit Tests:
+5. Arka Uç Birim Testlerini Çalıştırın:
    ```bash
    npm run test
    ```
 
-6. Start the Backend Server:
+6. Arka Uç Sunucusunu Başlatın:
    ```bash
    npm run start:dev
    ```
-   *The backend will run on http://localhost:3000.*
+   *Arka uç http://localhost:3000 adresinde çalışacaktır.*
 
 ---
 
-## 2. Frontend Setup (Nuxt 3)
+## 2. Ön Yüz Kurulumu (Nuxt 3)
 
-1. Open a new terminal and navigate to the `web` folder:
+1. Yeni bir terminal açın ve `web` klasörüne gidin:
    ```bash
    cd web
    ```
 
-2. Install dependencies:
+2. Bağımlılıkları yükleyin:
    ```bash
    npm install
    ```
 
-3. Configure Environment Variables:
-   Create a `.env` file in the `web` root directory:
+3. Çevresel Değişkenleri Yapılandırın:
+   `web` kök dizininde bir `.env` dosyası oluşturun:
    ```env
    PORT=4000
    NUXT_PUBLIC_API_BASE=http://localhost:3000
    ```
 
-4. Start the Frontend Server:
+4. Ön Yüz Sunucusunu Başlatın:
    ```bash
    npm run dev
    ```
-   *The frontend will run on http://localhost:4000.*
+   *Ön yüz http://localhost:4000 adresinde çalışacaktır.*
 
 ---
 
-## 3. How to Test the Flow
-1. Navigate to `http://localhost:4000` in your browser.
-2. If you ran the seed script, login with:
-   - Email: `agency@test.com`
-   - Password: `password123`
-3. Click **"İşlemler" (Transactions)** in the sidebar.
-4. Click **"+ Yeni Satış Başlat" (New Transaction)**.
-5. Select a Listing and a Selling Agent, then hit Start.
-6. Progress through the stages (Agreement -> Earnest Money -> Title Deed -> Completed) using the Stage Tracker UI.
-7. Observe the automated Commission Distribution card upon completion!
+## 3. Akış Nasıl Test Edilir
+1. Tarayıcınızda `http://localhost:4000` adresine gidin.
+2. Seed komut dosyasını çalıştırdıysanız, şu bilgilerle giriş yapın:
+   - E-posta: `agency@test.com`
+   - Şifre: `password123`
+3. Kenar çubuğundan **"İşlemler" (Transactions)** menüsüne tıklayın.
+4. **"+ Yeni Satış Başlat" (New Transaction)** butonuna tıklayın.
+5. Bir İlan ve bir Satış Danışmanı seçin, ardından Başlat'a basın.
+6. Stage Tracker (Aşama Takibi) arayüzünü kullanarak aşamalarda ilerleyin (Anlaşma -> Kaparo -> Tapu -> Tamamlandı).
+7. Tamamlandığında otomatik Komisyon Dağılımı kartını inceleyin!
 
-## Documentation
-Please refer to [DESIGN.md](./DESIGN.md) for a complete overview of the architecture, data models, and business logic decisions.
+## Dokümantasyon
+Mimari, veri modelleri ve iş mantığı kararlarına ilişkin eksiksiz bir genel bakış için lütfen [DESIGN.md](./DESIGN.md) dosyasına bakın.
