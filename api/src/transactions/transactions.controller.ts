@@ -20,6 +20,11 @@ export class TransactionsController {
     return this.transactionsService.create(createTransactionDto);
   }
 
+  @Get('stats')
+  getStats(@Req() req: JwtRequest) {
+    return this.transactionsService.getStats(req.user.sub, req.user.role);
+  }
+
   @Get()
   findAll(@Req() req: JwtRequest) {
     return this.transactionsService.findAll(req.user.sub, req.user.role);

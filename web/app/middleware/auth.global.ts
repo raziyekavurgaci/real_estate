@@ -2,7 +2,7 @@
 // Sadece client-side'da çalışır (localStorage erişimi için)
 export default defineNuxtRouteMiddleware((to) => {
   // Auth sayfaları bu middleware'den muaf
-  const publicRoutes = ['/login', '/register']
+  const publicRoutes = ['/login']
   if (publicRoutes.includes(to.path)) return
 
   // Sadece client tarafında kontrol et

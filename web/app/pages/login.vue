@@ -52,11 +52,6 @@
         </button>
       </form>
 
-      <!-- Kayıt linki -->
-      <p class="auth-footer">
-        Hesabın yok mu?
-        <NuxtLink to="/register" class="auth-link">Kayıt Ol</NuxtLink>
-      </p>
     </div>
   </div>
 </template>

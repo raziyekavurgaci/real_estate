@@ -12,27 +12,27 @@
       <div class="stats-grid">
         <UiStatCard 
           title="Aktif İşlemler" 
-          :value="activeTransactions" 
+          :value="loadingStats ? '...' : activeTransactions" 
           icon="📊" 
           iconBg="#e6f2ff" 
         />
         <UiStatCard 
           title="Tamamlanan" 
-          :value="completedTransactions" 
+          :value="loadingStats ? '...' : completedTransactions" 
           icon="✅" 
           iconBg="#e6fffa" 
         />
         <UiStatCard 
           v-if="authStore.isAgency"
           title="Toplam Komisyon Havuzu" 
-          :value="totalAgencyCommission + ' ₺'" 
+          :value="loadingStats ? '...' : totalCommission" 
           icon="💰" 
           iconBg="#fffbee" 
         />
         <UiStatCard 
           v-else
           title="Kazanılan Komisyon" 
-          :value="totalAgentCommission + ' ₺'" 
+          :value="loadingStats ? '...' : totalCommission" 
           icon="💸" 
           iconBg="#f0fff4" 
         />
@@ -53,17 +53,38 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
+
 definePageMeta({ layout: 'default' })
 useHead({ title: 'Dashboard — Real Estate' })
 
 const authStore = useAuthStore()
+const api = useApi()
 
-// Bunlar Faz 3'te transactions store üzerinden gerçek API verileriyle dolacak.
-// Şimdilik tasarım iskeletini yansıtması için hazırlandı.
 const activeTransactions = ref(0)
 const completedTransactions = ref(0)
-const totalAgencyCommission = ref('0')
-const totalAgentCommission = ref('0')
+const totalCommission = ref('0')
+const loadingStats = ref(true)
+
+onMounted(async () => {
+  if (!import.meta.client) return
+  try {
+    const stats = await api.get<{ active: number; completed: number; totalEarned: number }>(
+      '/transactions/stats'
+    )
+    activeTransactions.value = stats.active
+    completedTransactions.value = stats.completed
+    totalCommission.value = new Intl.NumberFormat('tr-TR', {
+      style: 'currency',
+      currency: 'TRY',
+      maximumFractionDigits: 0,
+    }).format(stats.totalEarned)
+  } catch (e) {
+    console.error('Stats yüklenemedi:', e)
+  } finally {
+    loadingStats.value = false
+  }
+})
 </script>
 
 <style scoped>

@@ -33,6 +33,17 @@ export class TransactionsService {
     const listing = await this.listingModel.findById(dto.listingId);
     if (!listing) throw new NotFoundException('İlan bulunamadı.');
 
+    // Aynı ilan için zaten aktif bir işlem var mı kontrol et
+    const existing = await this.transactionModel.findOne({
+      listing: dto.listingId,
+      stage: { $ne: TransactionStage.COMPLETED },
+    });
+    if (existing) {
+      throw new BadRequestException(
+        'Bu ilan için zaten devam eden aktif bir işlem bulunmaktadır.',
+      );
+    }
+
     const commissionRate = this.configService.get<number>('COMMISSION_RATE') ?? 0.03;
     const totalServiceFee = listing.price * Number(commissionRate);
 
@@ -47,20 +58,7 @@ export class TransactionsService {
   }
 
   async findAll(userId: string, role: string): Promise<Transaction[]> {
-    let filter: Record<string, unknown> = {};
-
-    if (role === UserRole.AGENT) {
-      // AGENT: Sadece kendi sattığı işlemleri görür
-      filter = { sellingAgent: userId };
-    } else if (role === UserRole.AGENCY) {
-      // AGENCY: Önce kendi acentesine bağlı agentları bul
-      const agents = await this.userModel
-        .find({ agency: userId })
-        .select('_id')
-        .exec();
-      const agentIds = agents.map((a) => a._id as Types.ObjectId);
-      filter = { sellingAgent: { $in: agentIds } };
-    }
+    const filter = await this.buildUserFilter(userId, role);
 
     return this.transactionModel
       .find(filter)
@@ -68,6 +66,72 @@ export class TransactionsService {
       .populate('sellingAgent', '-refreshToken')
       .populate('listingAgent', '-refreshToken')
       .exec();
+  }
+
+  async getStats(userId: string, role: string): Promise<{
+    active: number;
+    completed: number;
+    totalEarned: number;
+  }> {
+    const filter = await this.buildUserFilter(userId, role);
+
+    const transactions = await this.transactionModel
+      .find(filter)
+      .select('stage commission totalServiceFee listingAgent sellingAgent')
+      .exec();
+
+    const active = transactions.filter((t) => t.stage !== TransactionStage.COMPLETED).length;
+    const completed = transactions.filter((t) => t.stage === TransactionStage.COMPLETED).length;
+
+    let totalEarned = 0;
+    for (const tx of transactions) {
+      if (tx.stage !== TransactionStage.COMPLETED || !tx.commission) continue;
+
+      if (role === UserRole.AGENCY) {
+        totalEarned += tx.commission.agencyShare ?? 0;
+      } else {
+        // Agent: listing agent VE/VEYA selling agent olabileceği için her ikisini kontrol et
+        const isListingAgent = String(tx.listingAgent) === userId;
+        const isSellingAgent = String(tx.sellingAgent) === userId;
+        if (isListingAgent && isSellingAgent) {
+          // Hem listing hem selling: tüm agent payı bu kişide
+          totalEarned += tx.commission.listingAgentShare ?? 0;
+        } else {
+          if (isListingAgent) totalEarned += tx.commission.listingAgentShare ?? 0;
+          if (isSellingAgent) totalEarned += tx.commission.sellingAgentShare ?? 0;
+        }
+      }
+    }
+
+    console.log(`[getStats] userId=${userId} role=${role} foundTransactions=${transactions.length} filter=${JSON.stringify(filter)}`);
+
+    return { active, completed, totalEarned };
+  }
+
+  private async buildUserFilter(
+    userId: string,
+    role: string,
+  ): Promise<Record<string, unknown>> {
+    if (role === UserRole.AGENT) {
+      // AGENT: hem sattığı hem ilanını verdiği işlemleri görsün
+      return {
+        $or: [{ sellingAgent: userId }, { listingAgent: userId }],
+      };
+    } else if (role === UserRole.AGENCY) {
+      const agents = await this.userModel
+        .find({ agency: userId })
+        .select('_id')
+        .exec();
+      const agentIds = agents.map((a) => a._id as Types.ObjectId);
+      // AGENCY: altındaki agentların hem listing hem selling olduğu işlemlerin hepsi
+      return {
+        $or: [
+          { sellingAgent: { $in: agentIds } },
+          { listingAgent: { $in: agentIds } },
+        ],
+      };
+    }
+    return {};
   }
 
   async findOne(id: string): Promise<Transaction> {
