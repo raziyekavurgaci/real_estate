@@ -51,19 +51,7 @@ export const useAuthStore = defineStore('auth', {
       return data
     },
 
-    async signup(payload: { email: string; password: string; fullName: string; role: 'AGENCY' | 'AGENT' }) {
-      const config = useRuntimeConfig()
-      const data = await $fetch<{ access_token: string; refresh_token: string; user: User }>(
-        '/auth/signup',
-        {
-          method: 'POST',
-          baseURL: config.public.apiBase,
-          body: payload,
-        },
-      )
-      this._setSession(data)
-      return data
-    },
+
 
     logout() {
       this.user = null
